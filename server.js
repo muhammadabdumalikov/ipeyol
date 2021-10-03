@@ -1,9 +1,9 @@
 //Get npm packages
-import * as Express from "express";
+import Express from "express";
 import DotEnv from "dotenv";
 import Path from "path";
-import routes from "./src/routes/routes";
-import { ErrorHandler, handleError } from "./src/helpers/errorHandler";
+import routes from "./src/routes/routes.js";
+import { ErrorHandler, handleError } from "./src/helpers/errorHandler.js";
 
 //Get own env-variables
 DotEnv.config({
@@ -15,33 +15,37 @@ const PORT = process.env.PORT || 3000;
 
 //Server function
 async function server() {
-    // let db = postgres();
+    try {
+        // let db = postgres();
 
-    //Run server
-    const app = Express();
-    app.listen(PORT, () => console.log(`Server is running at ${PORT}`));
+        //Run server
+        const app = Express();
+        app.listen(PORT, () => console.log(`Server is running at ${PORT}`));
 
-    //Run middlewares
-    app.use(Express.urlencoded({ extended: true }));
-    app.use(Express.json());
+        //Run middlewares
+        app.use(Express.urlencoded({ extended: true }));
+        app.use(Express.json());
 
-    //Custom error-handler
-    app.use((req, res, next) => {
-        res.error = ErrorHandler;
-        // req.db = db;
-        next();
-    });
+        //Custom error-handler
+        app.use((req, res, next) => {
+            res.error = ErrorHandler;
+            // req.db = db;
+            next();
+        });
 
-    await routes(app);
+        await routes(app);
 
-    await app.use((req, res, next) => {
-        next(new ErrorHandler(404, "Not Found"));
-    });
+        await app.use((req, res, next) => {
+            next(new ErrorHandler(404, "Not Found"));
+        });
 
-    //Error handler section
-    await app.use((err, req, res, next) => {
-        handleError(err, res);
-    });
+        //Error handler section
+        await app.use((err, req, res, next) => {
+            handleError(err, res);
+        });
+    } catch (error) {
+        console.log(error);
+    }
 }
 
-server();
+server().then();
